@@ -1,0 +1,43 @@
+<script type="module">
+  import * as THREE from 'https://esm.sh/three';
+  import { STLLoader } from 'https://esm.sh/three/examples/jsm/loaders/STLLoader.js';
+  import { OrbitControls } from 'https://esm.sh/three/examples/jsm/controls/OrbitControls.js';
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x222222);
+  document.body.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(0, 1, 1).normalize();
+  scene.add(light);
+
+  const loader = new STLLoader();
+  loader.load('./models/lens.stl', geometry => {
+    geometry.computeBoundingBox();
+    const center = new THREE.Vector3();
+    geometry.boundingBox.getCenter(center);
+    geometry.translate(-center.x, -center.y, -center.z);
+
+    const material = new THREE.MeshPhongMaterial({ color: 0x0077ff });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.scale.set(1, 1, 1); 
+    scene.add(mesh);
+  }, undefined, error => {
+    console.error('❌ STL load error:', error);
+  });
+
+  camera.position.set(0, 0, 100);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+</script>
